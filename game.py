@@ -6,6 +6,10 @@ from multiprocessing.connection import Client
 os.system("clear")
 
 
+# TO DO
+# Altijd Response op bericht (dit fixt probleem met timing response player)
+
+
 # stappen
 # game check of al players bekend           &
 # game deelt player toe, in api             &
