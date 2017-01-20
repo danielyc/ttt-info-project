@@ -8,6 +8,7 @@ os.system("clear")
 
 # TO DO
 # Altijd Response op bericht (dit fixt probleem met timing response player)
+# fix game count input
 
 
 # stappen
@@ -42,6 +43,12 @@ layout = [" ", " ", " ",
 
 lastPlayer = " "
 
+winners = []
+
+gameNr = 1
+gameNrTarget = 0
+gameNrMax = 100
+
 disable_player_check = False
 
 raddress = ('10.0.1.34', 6000)
@@ -67,20 +74,28 @@ def printBoard():
 
 def checkWin(lay):
     if lay[0] and lay[1] and lay[2] == ("X" or "O"):
+        print("winner: " + lay[0])
         return True
     elif lay[3] and lay[4] and lay[5] == ("X" or "O"):
+        print("winner: " + lay[3])
         return True
     elif lay[6] and lay[7] and lay[8] == ("X" or "O"):
+        print("winner: " + lay[6])
         return True
     elif lay[0] and lay[4] and lay[8] == ("X" or "O"):
+        print("winner: " + lay[0])
         return True
     elif lay[2] and lay[4] and lay[6] == ("X" or "O"):
+        print("winner: " + lay[2])
         return True
     elif lay[0] and lay[3] and lay[6] == ("X" or "O"):
+        print("winner: " + lay[0])
         return True
     elif lay[1] and lay[4] and lay[7] == ("X" or "O"):
+        print("winner: " + lay[1])
         return True
     elif lay[2] and lay[5] and lay[8] == ("X" or "O"):
+        print("winner: " + lay[2])
         return True
     else:
         return False
@@ -184,7 +199,17 @@ def checkPlayers():
                 print(players)  # DEBUG
 
 
-def main():
+def gameCount():
+    global gameNrTarget
+    nr = input("How manny times do you want to play sequential? (max " + str(gameNrMax) + ") ")
+    if isinstance(nr, int):
+        if nr > gameNrMax:
+            print("Exceeded maximum of '" + str(gameNrMax) + "' games")
+        gameNrTarget = nr
+    else:
+        print("input not int")
+
+def game():
     printIp()
 #    inputMove(4,"O")
 #    printBoard()
@@ -195,6 +220,14 @@ def main():
     printBoard()
 
     checkPlayers()
+
+
+def main():
+    global gameNr
+    gameCount()
+    while gameNr <= gameNrTarget:
+        game()
+        gameNr += 1
 
 
 if __name__ == "__main__":
