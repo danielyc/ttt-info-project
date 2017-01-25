@@ -3,12 +3,11 @@ import random
 import socket
 from multiprocessing.connection import Listener
 from multiprocessing.connection import Client
-os.system("clear")
+os.system("cls")
 
 
 # TO DO
 # Altijd Response op bericht (dit fixt probleem met timing response player)
-# fix game count input
 
 
 # stappen
@@ -51,7 +50,7 @@ gameNrMax = 100
 
 disable_player_check = False
 
-raddress = ('10.0.1.34', 6000)
+raddress = ('127.0.0.1', 6000)
 
 listen = Listener(raddress, authkey=b'tttinfo')
 
@@ -201,13 +200,14 @@ def checkPlayers():
 
 def gameCount():
     global gameNrTarget
-    nr = input("How manny times do you want to play sequential? (max " + str(gameNrMax) + ") ")
+    nr = int(input("How manny times do you want to play sequential? (max " + str(gameNrMax) + ") "))
     if isinstance(nr, int):
         if nr > gameNrMax:
             print("Exceeded maximum of '" + str(gameNrMax) + "' games")
         gameNrTarget = nr
     else:
         print("input not int")
+        exit()
 
 def game():
     printIp()
