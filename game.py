@@ -8,7 +8,7 @@ os.system("cls")
 
 # TO DO
 # Altijd Response op bericht (dit fixt probleem met timing response player)
-
+# Fix manual ip input sanitation
 
 # stappen
 # game check of al players bekend           &
@@ -50,10 +50,24 @@ gameNrMax = 100
 
 disable_player_check = False
 
-raddress = ('127.0.0.1', 6000)
+def printIp():
+    if socket.gethostbyname(socket.gethostname()) == "127.0.1.1" or True:
+        print("[ERROR] not able to get correct Local IP")
+        inp = input("Enter IP manually: ")
+        if len(inp) == 0:
+            print("[ERROR] no IP provided")
+            exit()
+        else:
+            raddress = (str(inp), 6000)
+    else:
+        print("Game IP: " + socket.gethostbyname(socket.gethostname()))
+        raddress = (socket.gethostbyname(socket.gethostname()), 6000)
+
+
+if not printIp():
+    raddress = ('127.0.0.1', 6000)
 
 listen = Listener(raddress, authkey=b'tttinfo')
-
 
 def Board(position, player):
     global layout
@@ -168,13 +182,6 @@ def sendBoard(player):
         conn.close()
 
 
-def printIp():
-    if socket.gethostbyname(socket.gethostname()) == "127.0.1.1":
-        print("[ERROR] not able to get correct Local IP")
-    else:
-        print("Game IP: " + socket.gethostbyname(socket.gethostname()))
-
-
 def checkPlayersEmpty():
     for i in range(6):
         if players[i] != " ":
@@ -210,7 +217,6 @@ def gameCount():
         exit()
 
 def game():
-    printIp()
 #    inputMove(4,"O")
 #    printBoard()
     initGame()
