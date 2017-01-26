@@ -1,14 +1,19 @@
 import os
 import random
 import socket
+import sys
+from ipaddress import ip_address
 from multiprocessing.connection import Listener
 from multiprocessing.connection import Client
-os.system("cls")
+
+if sys.platform.startswith("Linux"):
+    os.system("clear")
+elif sys.platform.startswith("Win32"):
+    os.system("cls")
 
 
-# TO DO
+# TODO
 # Altijd Response op bericht (dit fixt probleem met timing response player)
-# Fix manual ip input sanitation
 
 # stappen
 # game check of al players bekend           &
@@ -43,6 +48,7 @@ layout = [" ", " ", " ",
 lastPlayer = " "
 
 winners = []
+raddress = ""
 
 gameNr = 1
 gameNrTarget = 0
@@ -50,24 +56,33 @@ gameNrMax = 100
 
 disable_player_check = False
 
-def printIp():
-    if socket.gethostbyname(socket.gethostname()) == "127.0.1.1" or True:
-        print("[ERROR] not able to get correct Local IP")
+
+def error(msg, ext=False):
+    if ext:
+        print("[ERROR] " + msg)
+        exit()
+    else:
+        print("[ERROR] " + msg)
+
+
+def setIp():
+    global raddress
+    if socket.gethostbyname(socket.gethostname()) == "127.0.1.1":
+        error("not able to get correct Local IP")
         inp = input("Enter IP manually: ")
         if len(inp) == 0:
-            print("[ERROR] no IP provided")
-            exit()
-        else:
-            raddress = (str(inp), 6000)
+            error("no IP provided", True)
+        try:
+            if ip_address(inp):
+                raddress = (str(inp), 6000)
+        except:
+            error("Invalid ip", True)
     else:
         print("Game IP: " + socket.gethostbyname(socket.gethostname()))
         raddress = (socket.gethostbyname(socket.gethostname()), 6000)
 
-
-if not printIp():
-    raddress = ('127.0.0.1', 6000)
-
 listen = Listener(raddress, authkey=b'tttinfo')
+
 
 def Board(position, player):
     global layout
@@ -216,9 +231,8 @@ def gameCount():
         print("input not int")
         exit()
 
+
 def game():
-#    inputMove(4,"O")
-#    printBoard()
     initGame()
     print(players)
     sendBoard("X")
@@ -230,6 +244,7 @@ def game():
 
 def main():
     global gameNr
+    setIp()
     gameCount()
     while gameNr <= gameNrTarget:
         game()
