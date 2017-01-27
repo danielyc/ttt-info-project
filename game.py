@@ -75,11 +75,24 @@ def setIp():
         try:
             if ip_address(inp):
                 raddress = (str(inp), 6000)
-        except:
+        except ValueError:
             error("Invalid ip", True)
     else:
-        print("Game IP: " + socket.gethostbyname(socket.gethostname()))
-        raddress = (socket.gethostbyname(socket.gethostname()), 6000)
+        inp = input("Is '" + socket.gethostbyname(socket.gethostname()) + "' The correct IP? (y/n)")
+        if inp.upper() == "Y":
+            raddress = (socket.gethostbyname(socket.gethostname()), 6000)
+        elif inp.upper() == "N":
+            inp = input("Enter IP manually: ")
+            if len(inp) == 0:
+                error("no IP provided", True)
+            try:
+                if ip_address(inp):
+                    raddress = (str(inp), 6000)
+            except ValueError:
+                error("Invalid ip", True)
+        else:
+            error("Not a valid input", True)
+
 
 listen = Listener(raddress, authkey=b'tttinfo')
 
