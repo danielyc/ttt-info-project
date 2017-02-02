@@ -6,14 +6,16 @@ from ipaddress import ip_address
 from multiprocessing.connection import Listener
 from multiprocessing.connection import Client
 
-if sys.platform.startswith("Linux"):
-    os.system("clear")
-elif sys.platform.startswith("Win32"):
-    os.system("cls")
+
+def clearS():
+    if sys.platform.startswith("Linux"):
+        os.system("clear")
+    elif sys.platform.startswith("Win32"):
+        os.system("cls")
 
 
 # TODO
-# Altijd Response op bericht (dit fixt probleem met timing response player)
+# fix check win end game
 
 # stappen
 # game check of al players bekend           &
@@ -103,7 +105,7 @@ def Board(position, player):
 
 
 def printBoard():
-    os.system("clear")
+    clearS()
     print("-------------------------")
     print("|   " + layout[0] + "   |   " + layout[1] + "   |   " + layout[2] + "   |")
     print("-------------------------")
@@ -157,6 +159,8 @@ def receiveMove():
     if not inputMove(msg[0], msg[1]):
         print("Invalid move")
         rconn.send("InvalidMove")
+    else:
+        rconn.send("Valid")
     listen.close()
 
 
@@ -230,7 +234,6 @@ def checkPlayers():
             if inp.upper() == "Y":
                 players = [" ", " ", " ",
                            " ", " ", " "]
-                print(players)  # DEBUG
 
 
 def gameCount():
@@ -246,7 +249,6 @@ def gameCount():
 
 
 def game():
-    initGame()
     print(players)
     sendBoard("X")
     receiveMove()
@@ -256,13 +258,18 @@ def game():
 
 
 def main():
+    clearS()
     global gameNr
     setIp()
     gameCount()
+    initGame()
     while gameNr <= gameNrTarget:
         game()
         gameNr += 1
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        error("Exiting program",True)

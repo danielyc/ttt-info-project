@@ -28,7 +28,6 @@ def startGame():
     global player
     name = input("Name: ")
 
-
     cconn = Client(caddress, authkey=b'tttinfo')
     cconn.send(name)
 
@@ -49,13 +48,10 @@ def sendMove():
     pos = input("Position: ")
     cconn = Client(caddress, authkey=b'tttinfo')
     cconn.send([int(pos),player])
-    try:
-        if not timeout(0.2) or cconn.recv():
-            if cconn.recv() == "InvalidMove":
-               print("Invalid move")
-    except:
-        pass
-    cconn.close()
+    if cconn.recv() == "InvalidMove":
+        print("Invalid move")
+    elif cconn.recv() == "Valid":
+        cconn.close()
 
 
 def receiveBoard():
