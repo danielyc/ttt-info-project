@@ -69,7 +69,7 @@ def error(msg, ext=False):
 
 def setIp():
     global raddress
-    if socket.gethostbyname(socket.gethostname()) == "127.0.1.1":
+    if socket.gethostbyname(socket.gethostname()) == "127.0.1.1" or "127.0.0.1":
         error("not able to get correct Local IP")
         inp = input("Enter IP manually: ")
         if len(inp) == 0:

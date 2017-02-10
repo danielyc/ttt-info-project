@@ -11,8 +11,8 @@ layout = [" ", " ", " ",
           " ", " ", " ",
           " ", " ", " "]
 
-caddress = ('10.0.1.34', 6000)
-raddress = ('10.0.1.34', 5000)
+caddress = ('172.16.8.96', 6000)
+raddress = ('172.16.8.96', 5000)
 listen = Listener(raddress, authkey=b'tttinfo')
 
 def printBoard():
