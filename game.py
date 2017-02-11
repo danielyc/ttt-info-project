@@ -15,7 +15,7 @@ def clearS():
 
 
 # TODO
-# fix check win end game
+#
 
 # stappen
 # game check of al players bekend           &
@@ -115,39 +115,41 @@ def printBoard():
     print("-------------------------")
 
 
-def checkWin(lay):
+def Won(player):
+    print("winner: " + player)
+
+
+def checkWin():
+    lay = layout
     if lay[0] and lay[1] and lay[2] == ("X" or "O"):
-        print("winner: " + lay[0])
+        Won(lay[0])
         return True
     elif lay[3] and lay[4] and lay[5] == ("X" or "O"):
-        print("winner: " + lay[3])
+        Won(lay[3])
         return True
     elif lay[6] and lay[7] and lay[8] == ("X" or "O"):
-        print("winner: " + lay[6])
+        Won(lay[6])
         return True
     elif lay[0] and lay[4] and lay[8] == ("X" or "O"):
-        print("winner: " + lay[0])
+        Won(lay[0])
         return True
     elif lay[2] and lay[4] and lay[6] == ("X" or "O"):
-        print("winner: " + lay[2])
+        Won(lay[2])
         return True
     elif lay[0] and lay[3] and lay[6] == ("X" or "O"):
-        print("winner: " + lay[0])
+        Won(lay[0])
         return True
     elif lay[1] and lay[4] and lay[7] == ("X" or "O"):
-        print("winner: " + lay[1])
+        Won(lay[1])
         return True
     elif lay[2] and lay[5] and lay[8] == ("X" or "O"):
-        print("winner: " + lay[2])
+        Won(lay[2])
         return True
-    else:
-        return False
 
 
 def inputMove(pos, player):
         if layout[pos] == " ":
             Board(pos, player)
-            checkWin(layout)
             return True
         else:
             return False
@@ -253,6 +255,8 @@ def game():
     sendBoard("X")
     receiveMove()
     printBoard()
+    if checkWin():
+        return
 
     checkPlayers()
 
@@ -266,6 +270,7 @@ def main():
     while gameNr <= gameNrTarget:
         game()
         gameNr += 1
+    print("Game ended")
 
 
 if __name__ == "__main__":

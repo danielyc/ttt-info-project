@@ -2,8 +2,15 @@ from multiprocessing.connection import Client
 from multiprocessing.connection import Listener
 import os
 from time import sleep
+import sys
 
-os.system("clear")
+
+def clearS():
+    if sys.platform.startswith("Linux"):
+        os.system("clear")
+    elif sys.platform.startswith("Win32"):
+        os.system("cls")
+
 
 player = " "
 
@@ -15,6 +22,15 @@ caddress = ('172.16.8.96', 6000)
 raddress = ('172.16.8.96', 5000)
 listen = Listener(raddress, authkey=b'tttinfo')
 
+
+def error(msg, ext=False):
+    if ext:
+        print("[ERROR] " + msg)
+        exit()
+    else:
+        print("[ERROR] " + msg)
+
+
 def printBoard():
     print("-------------------------")
     print("|   " + layout[0] + "   |   " + layout[1] + "   |   " + layout[2] + "   |")
@@ -23,6 +39,7 @@ def printBoard():
     print("-------------------------")
     print("|   " + layout[6] + "   |   " + layout[7] + "   |   " + layout[8] + "   |")
     print("-------------------------")
+
 
 def startGame():
     global player
@@ -49,7 +66,7 @@ def sendMove():
     cconn = Client(caddress, authkey=b'tttinfo')
     cconn.send([int(pos),player])
     if cconn.recv() == "InvalidMove":
-        print("Invalid move")
+        error("Invalid move", True)
     elif cconn.recv() == "Valid":
         cconn.close()
 
