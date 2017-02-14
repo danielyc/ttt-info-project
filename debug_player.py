@@ -1,8 +1,10 @@
 from multiprocessing.connection import Client
 from multiprocessing.connection import Listener
+from ipaddress import ip_address
 import os
 from time import sleep
 import sys
+import socket
 
 
 def clearS():
@@ -18,9 +20,8 @@ layout = [" ", " ", " ",
           " ", " ", " ",
           " ", " ", " "]
 
-caddress = ('172.16.8.96', 6000)
-raddress = ('172.16.8.96', 5000)
-listen = Listener(raddress, authkey=b'tttinfo')
+raddress = ""
+caddress = ""
 
 
 def error(msg, ext=False):
@@ -29,6 +30,37 @@ def error(msg, ext=False):
         exit()
     else:
         print("[ERROR] " + msg)
+
+
+def setIp():
+    global raddress
+    if socket.gethostbyname(socket.gethostname()) == "127.0.1.1" or "127.0.0.1":
+        error("not able to get correct Local IP")
+        inp = input("Enter IP manually: ")
+        if len(inp) == 0:
+            error("no IP provided", True)
+        try:
+            if ip_address(inp):
+                raddress = (str(inp), 5000)
+        except ValueError:
+            error("Invalid ip", True)
+    else:
+        inp = input("Is '" + socket.gethostbyname(socket.gethostname()) + "' The correct IP? (y/n)")
+        if inp.upper() == "Y":
+            raddress = (socket.gethostbyname(socket.gethostname()), 5000)
+        elif inp.upper() == "N":
+            inp = input("Enter IP manually: ")
+            if len(inp) == 0:
+                error("no IP provided", True)
+            try:
+                if ip_address(inp):
+                    raddress = (str(inp), 6000)
+            except ValueError:
+                error("Invalid ip", True)
+        else:
+            error("Not a valid input", True)
+
+listen = Listener(raddress, authkey=b'tttinfo')
 
 
 def printBoard():
@@ -43,13 +75,25 @@ def printBoard():
 
 def startGame():
     global player
+    global caddress
     name = input("Name: ")
+    inp = input("Enter IP of the Game: ")
+    if len(inp) == 0:
+        error("IP empty", True)
+    else:
+        try:
+            if ip_address(inp):
+                caddress = (str(inp), 6000)
+        except ValueError:
+            error("Invalid IP", True)
+    try:
+        cconn = Client(caddress, authkey=b'tttinfo')
+        cconn.send(name)
 
-    cconn = Client(caddress, authkey=b'tttinfo')
-    cconn.send(name)
-
-    player = cconn.recv()
-    cconn.close()
+        player = cconn.recv()
+        cconn.close()
+    except ConnectionRefusedError:
+        error("Game not functioning or listening", True)
     print("You are player: " + player)
 
     if player == "O":
@@ -81,6 +125,7 @@ def receiveBoard():
 
 
 def main():
+    setIp()
     startGame()
     receiveBoard()
     sendMove()
