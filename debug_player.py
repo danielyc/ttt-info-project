@@ -13,6 +13,8 @@ def clearS():
     elif sys.platform.startswith("Win32"):
         os.system("cls")
 
+Lport = 5000
+Cport = 80
 
 player = " "
 
@@ -34,27 +36,27 @@ def error(msg, ext=False):
 
 def setIp():
     global raddress
-    if socket.gethostbyname(socket.gethostname()) == "127.0.1.1" or "127.0.0.1":
+    if socket.gethostbyname(socket.gethostname()) == '127.0.1.1':
         error("not able to get correct Local IP")
         inp = input("Enter IP manually: ")
         if len(inp) == 0:
             error("no IP provided", True)
         try:
             if ip_address(inp):
-                raddress = (str(inp), 5000)
+                raddress = (str(inp), Lport)
         except ValueError:
             error("Invalid ip", True)
     else:
         inp = input("Is '" + socket.gethostbyname(socket.gethostname()) + "' The correct IP? (y/n)")
         if inp.upper() == "Y":
-            raddress = (socket.gethostbyname(socket.gethostname()), 5000)
+            raddress = (socket.gethostbyname(socket.gethostname()), Lport)
         elif inp.upper() == "N":
             inp = input("Enter IP manually: ")
             if len(inp) == 0:
                 error("no IP provided", True)
             try:
                 if ip_address(inp):
-                    raddress = (str(inp), 6000)
+                    raddress = (str(inp), Lport)
             except ValueError:
                 error("Invalid ip", True)
         else:
@@ -83,7 +85,8 @@ def startGame():
     else:
         try:
             if ip_address(inp):
-                caddress = (str(inp), 6000)
+                print("Connecting to " + str(inp) + " on port " + str(Cport))
+                caddress = (str(inp), Cport)
         except ValueError:
             error("Invalid IP", True)
     try:
@@ -108,8 +111,9 @@ def timeout(time):
 def sendMove():
     pos = input("Position: ")
     cconn = Client(caddress, authkey=b'tttinfo')
-    cconn.send([int(pos),player])
+    cconn.send([int(pos), player])
     if cconn.recv() == "InvalidMove":
+
         error("Invalid move", True)
     elif cconn.recv() == "Valid":
         cconn.close()

@@ -40,6 +40,9 @@ def clearS():
 # client naar game 6000
 # game naar client 5000
 
+Lport = 80
+Cport = 5000
+
 players = [" ", " ", " ",
            " ", " ", " "]
 
@@ -69,27 +72,27 @@ def error(msg, ext=False):
 
 def setIp():
     global raddress
-    if socket.gethostbyname(socket.gethostname()) == "127.0.1.1" or "127.0.0.1":
+    if socket.gethostbyname(socket.gethostname()) == "127.0.1.1":
         error("not able to get correct Local IP")
         inp = input("Enter IP manually: ")
         if len(inp) == 0:
             error("no IP provided", True)
         try:
             if ip_address(inp):
-                raddress = (str(inp), 6000)
+                raddress = (str(inp), Lport)
         except ValueError:
             error("Invalid ip", True)
     else:
         inp = input("Is '" + socket.gethostbyname(socket.gethostname()) + "' The correct IP? (y/n)")
         if inp.upper() == "Y":
-            raddress = (socket.gethostbyname(socket.gethostname()), 6000)
+            raddress = (socket.gethostbyname(socket.gethostname()), Lport)
         elif inp.upper() == "N":
             inp = input("Enter IP manually: ")
             if len(inp) == 0:
                 error("no IP provided", True)
             try:
                 if ip_address(inp):
-                    raddress = (str(inp), 6000)
+                    raddress = (str(inp), Lport)
             except ValueError:
                 error("Invalid ip", True)
         else:
@@ -167,7 +170,7 @@ def receiveMove():
 
 
 def initGame():
-    print("Game starting")
+    print("Game starting on port: " + str(Lport))
     global players
     conn = listen.accept()
     players[0] = conn.recv()
@@ -205,12 +208,12 @@ def reset():
 
 def sendBoard(player):
     if players[1] == player:
-        addr = (players[2], 5000)
+        addr = (players[2], Cport)
         conn = Client(addr, authkey=b'tttinfo')
         conn.send(layout)
         conn.close()
     else:
-        addr = (players[5], 5000)
+        addr = (players[5], Cport)
         conn = Client(addr, authkey=b'tttinfo')
         conn.send(layout)
         conn.close()
