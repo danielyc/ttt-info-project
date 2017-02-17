@@ -137,6 +137,15 @@ def main():
     startGame()
     receiveBoard()
     sendMove()
+    receiveBoard()
+    sendMove()
+    receiveBoard()
+    sendMove()
+    receiveBoard()
+    sendMove()
+    receiveBoard()
+    sendMove()
+
 
 
 if __name__ == "__main__":
