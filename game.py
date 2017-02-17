@@ -17,6 +17,8 @@ def clearS():
 # TODO
 #
 
+#VERSIE 1.0
+
 # stappen
 # game check of al players bekend           &
 # game deelt player toe, in api             &
@@ -262,24 +264,20 @@ def gameCount():
 
 def game():
     print(players)
-    sendBoard("X")
-    receiveMove()
-    clearS()
-    printBoard()
-    sendBoard("O")
-    receiveMove()
-    clearS()
-    printBoard()
-    sendBoard("X")
-    receiveMove()
-    clearS()
-    printBoard()
-    sendBoard("O")
-    receiveMove()
-    clearS()
-    printBoard()
-    if checkWin():
-        return
+    for i in range(9):
+        sendBoard("X")
+        receiveMove()
+        clearS()
+        printBoard()
+        if checkWin():
+            break
+        sendBoard("O")
+        receiveMove()
+        clearS()
+        printBoard()
+        if checkWin():
+            break
+    return
 
 
 def main():
