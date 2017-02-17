@@ -46,14 +46,12 @@ def setIp():
         try:
             if ip_address(inp):
                 raddress = (str(inp), Lport)
-                listen = Listener(raddress, authkey=b'tttinfo')
         except ValueError:
             error("Invalid ip", True)
     else:
         inp = input("Is '" + socket.gethostbyname(socket.gethostname()) + "' The correct IP? (y/n)")
         if inp.upper() == "Y":
             raddress = (socket.gethostbyname(socket.gethostname()), Lport)
-            listen = Listener(raddress, authkey=b'tttinfo')
         elif inp.upper() == "N":
             inp = input("Enter IP manually: ")
             if len(inp) == 0:
@@ -61,13 +59,13 @@ def setIp():
             try:
                 if ip_address(inp):
                     raddress = (str(inp), Lport)
-                    listen = Listener(raddress, authkey=b'tttinfo')
             except ValueError:
                 error("Invalid ip", True)
         else:
             error("Not a valid input", True)
+    listen = Listener(raddress, authkey=b'tttinfo')
 
-listen = Listener(raddress, authkey=b'tttinfo')
+
 
 
 def printBoard():
@@ -117,10 +115,11 @@ def sendMove():
     pos = input("Position: ")
     cconn = Client(caddress, authkey=b'tttinfo')
     cconn.send([int(pos), player])
-    if cconn.recv() == "InvalidMove":
-
+    msg = cconn.recv()
+    if msg == "InvalidMove":
+        cconn.close()
         error("Invalid move", True)
-    elif cconn.recv() == "Valid":
+    elif msg == "Valid":
         cconn.close()
 
 

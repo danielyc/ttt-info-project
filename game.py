@@ -43,7 +43,6 @@ def clearS():
 Lport = 80
 Cport = 5000
 IP = ''
-listen = ''
 
 players = [" ", " ", " ",
            " ", " ", " "]
@@ -85,7 +84,6 @@ def setIp():
         try:
             if ip_address(inp):
                 raddress = (str(inp), Lport)
-                listen = Listener(raddress, authkey=b'tttinfo')
         except ValueError:
             error("Invalid ip", True)
     else:
@@ -93,7 +91,7 @@ def setIp():
         if inp.upper() == "Y":
             raddress = (IP, Lport)
             print(raddress)
-            listen = Listener(raddress, authkey=b'tttinfo')
+
         elif inp.upper() == "N":
             inp = input("Enter IP manually: ")
             if len(inp) == 0:
@@ -101,13 +99,13 @@ def setIp():
             try:
                 if ip_address(inp):
                     raddress = (str(inp), Lport)
-                    listen = Listener(raddress, authkey=b'tttinfo')
             except ValueError:
                 error("Invalid ip", True)
         else:
             error("Not a valid input", True)
+    listen = Listener(raddress, authkey=b'tttinfo')
 
-
+print(raddress)
 
 
 def Board(position, player):
@@ -132,28 +130,28 @@ def Won(player):
 
 def checkWin():
     lay = layout
-    if lay[0] and lay[1] and lay[2] == ("X" or "O"):
+    if (lay[0] == "X" and lay[1] == "X" and lay[2] == "X") or (lay[0] == "O" and lay[1] == "O" and lay[2] == "O"):
         Won(lay[0])
         return True
-    elif lay[3] and lay[4] and lay[5] == ("X" or "O"):
+    elif (lay[3] == "X" and lay[4] == "X" and lay[5] == "X") or (lay[3] == "O" and lay[4] == "O" and lay[5] == "O"):
         Won(lay[3])
         return True
-    elif lay[6] and lay[7] and lay[8] == ("X" or "O"):
+    elif (lay[6] == "X" and lay[7] == "X" and lay[8] == "X") or (lay[6] == "O" and lay[7] == "O" and lay[8] == "O"):
         Won(lay[6])
         return True
-    elif lay[0] and lay[4] and lay[8] == ("X" or "O"):
+    elif (lay[0] == "X" and lay[4] == "X" and lay[8] == "X") or (lay[0] == "O" and lay[4] == "O" and lay[8] == "O"):
         Won(lay[0])
         return True
-    elif lay[2] and lay[4] and lay[6] == ("X" or "O"):
+    elif (lay[2] == "X" and lay[4] == "X" and lay[6] == "X") or (lay[2] == "O" and lay[4] == "O" and lay[6] == "O"):
         Won(lay[2])
         return True
-    elif lay[0] and lay[3] and lay[6] == ("X" or "O"):
+    elif (lay[0] == "X" and lay[3] == "X" and lay[6] == "X") or (lay[0] == "O" and lay[3] == "O" and lay[6] == "O"):
         Won(lay[0])
         return True
-    elif lay[1] and lay[4] and lay[7] == ("X" or "O"):
+    elif (lay[1] == "X" and lay[4] == "X" and lay[7] == "X") or (lay[1] == "O" and lay[4] == "O" and lay[7] == "O"):
         Won(lay[1])
         return True
-    elif lay[2] and lay[5] and lay[8] == ("X" or "O"):
+    elif (lay[2] == "X" and lay[5] == "X" and lay[8] == "X") or (lay[2] == "O" and lay[5] == "O" and lay[8] == "O"):
         Won(lay[2])
         return True
 
@@ -173,8 +171,9 @@ def receiveMove():
         print("Invalid move")
         rconn.send("InvalidMove")
     else:
+        print("Valid")
         rconn.send("Valid")
-    listen.close()
+    rconn.close()
 
 
 def initGame():
@@ -265,11 +264,22 @@ def game():
     print(players)
     sendBoard("X")
     receiveMove()
+    clearS()
+    printBoard()
+    sendBoard("O")
+    receiveMove()
+    clearS()
+    printBoard()
+    sendBoard("X")
+    receiveMove()
+    clearS()
+    printBoard()
+    sendBoard("O")
+    receiveMove()
+    clearS()
     printBoard()
     if checkWin():
         return
-
-    checkPlayers()
 
 
 def main():
@@ -277,6 +287,7 @@ def main():
     global gameNr
     setIp()
     gameCount()
+    checkPlayers()
     initGame()
     while gameNr <= gameNrTarget:
         game()
