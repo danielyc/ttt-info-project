@@ -42,6 +42,8 @@ def clearS():
 
 Lport = 80
 Cport = 5000
+IP = ''
+listen = ''
 
 players = [" ", " ", " ",
            " ", " ", " "]
@@ -72,7 +74,10 @@ def error(msg, ext=False):
 
 def setIp():
     global raddress
-    if socket.gethostbyname(socket.gethostname()) == "127.0.1.1":
+    global IP
+    global listen
+    IP = socket.gethostbyname(socket.gethostname())
+    if IP == "127.0.1.1":
         error("not able to get correct Local IP")
         inp = input("Enter IP manually: ")
         if len(inp) == 0:
@@ -80,12 +85,15 @@ def setIp():
         try:
             if ip_address(inp):
                 raddress = (str(inp), Lport)
+                listen = Listener(raddress, authkey=b'tttinfo')
         except ValueError:
             error("Invalid ip", True)
     else:
-        inp = input("Is '" + socket.gethostbyname(socket.gethostname()) + "' The correct IP? (y/n)")
+        inp = input("Is '" + IP + "' The correct IP? (y/n)")
         if inp.upper() == "Y":
-            raddress = (socket.gethostbyname(socket.gethostname()), Lport)
+            raddress = (IP, Lport)
+            print(raddress)
+            listen = Listener(raddress, authkey=b'tttinfo')
         elif inp.upper() == "N":
             inp = input("Enter IP manually: ")
             if len(inp) == 0:
@@ -93,13 +101,13 @@ def setIp():
             try:
                 if ip_address(inp):
                     raddress = (str(inp), Lport)
+                    listen = Listener(raddress, authkey=b'tttinfo')
             except ValueError:
                 error("Invalid ip", True)
         else:
             error("Not a valid input", True)
 
 
-listen = Listener(raddress, authkey=b'tttinfo')
 
 
 def Board(position, player):
