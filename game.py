@@ -21,20 +21,20 @@ def clearS():
 # game check of al players bekend           &
 # game deelt player toe, in api             &
 # game cleart speelbord                     &
-# game ontvangt zet player x
-# game stuurt bord naar o
-# game ontvangt zet o
-# game stuurt bord naar x
-# game ontvangt zet x
+# game ontvangt zet player x                &
+# game stuurt bord naar o                   &
+# game ontvangt zet o                       &
+# game stuurt bord naar x                   &
+# game ontvangt zet x                       &
 # game test voor winst                      &
 # game reset bord                           &
 # game houd bij welke bot vaakst wint
 
 # client stuurt naam en ontvangt x of o     &
 # client x ontvangt bord                    &
-# client x stuurt zet
-# client o ontvangt bord
-# client o stuurt zet
+# client x stuurt zet                       &
+# client o ontvangt bord                    &
+# client o stuurt zet                       &
 # client ontvangt winst of verlies en bord
 
 # client naar game 6000
