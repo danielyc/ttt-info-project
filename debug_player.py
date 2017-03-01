@@ -14,7 +14,7 @@ def clearS():
         os.system("cls")
 
 Lport = 5000
-Cport = 80
+Cport = 6000
 
 player = " "
 

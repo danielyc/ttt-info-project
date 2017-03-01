@@ -17,7 +17,7 @@ def clearS():
 # TODO
 #
 
-#VERSIE 1.0
+# VERSIE 1.0
 
 # stappen
 # game check of al players bekend           &
@@ -42,33 +42,31 @@ def clearS():
 # client naar game 6000
 # game naar client 5000
 
-Lport = 80
+Lport = 6000
 Cport = 5000
 IP = ''
 
-players = [" ", " ", " ",
+players = [" ", " ", " ",           # naam, ip, speler
            " ", " ", " "]
 
-layout = [" ", " ", " ",
+layout = [" ", " ", " ",            # speelbord
           " ", " ", " ",
           " ", " ", " "]
 
-lastPlayer = " "
-
 winners = []
-raddress = ""
+raddress = ""                       # (ip, port)
 
 gameNr = 1
-gameNrTarget = 0
+gameNrTarget = 0                    # hoeveel spellen er gespeeld worden
 gameNrMax = 100
 
-disable_player_check = False
+disable_player_check = False        # check of de spelers leeg zijn aan het einde van de ronden
 
 
-def error(msg, ext=False):
+def error(msg, ext=False):          # error afdrukken
     if ext:
         print("[ERROR] " + msg)
-        exit()
+        exit()                      # stop het spel
     else:
         print("[ERROR] " + msg)
 
@@ -77,24 +75,24 @@ def setIp():
     global raddress
     global IP
     global listen
-    IP = socket.gethostbyname(socket.gethostname())
-    if IP == "127.0.1.1":
+    IP = socket.gethostbyname(socket.gethostname())  # zoekt lokaal ip op
+    if IP == "127.0.1.1":                            # kan lokaal ip niet vinden
         error("not able to get correct Local IP")
         inp = input("Enter IP manually: ")
-        if len(inp) == 0:
+        if len(inp) == 0:                           # is er input
             error("no IP provided", True)
         try:
-            if ip_address(inp):
+            if ip_address(inp):                     # is het een echt ip
                 raddress = (str(inp), Lport)
         except ValueError:
             error("Invalid ip", True)
     else:
-        inp = input("Is '" + IP + "' The correct IP? (y/n)")
+        inp = input("Is '" + IP + "' The correct IP? (y/n)")       # als het ip gevonden kan worden
         if inp.upper() == "Y":
             raddress = (IP, Lport)
             print(raddress)
 
-        elif inp.upper() == "N":
+        elif inp.upper() == "N":                                    # klopt het gehaalde ip niet
             inp = input("Enter IP manually: ")
             if len(inp) == 0:
                 error("no IP provided", True)
@@ -107,10 +105,10 @@ def setIp():
             error("Not a valid input", True)
     listen = Listener(raddress, authkey=b'tttinfo')
 
-print(raddress)
+print(raddress)  # DEBUG
 
 
-def Board(position, player):
+def Board(position, player):            # plaats zet
     global layout
     layout[int(position)] = player.upper()
 
@@ -127,6 +125,7 @@ def printBoard():
 
 
 def Won(player):
+    global winners
     print("winner: " + player)
 
 
@@ -158,7 +157,7 @@ def checkWin():
         return True
 
 
-def inputMove(pos, player):
+def inputMove(pos, player):                     # checkt gevraagde zet mogelijk
         if layout[pos] == " ":
             Board(pos, player)
             return True
@@ -166,7 +165,7 @@ def inputMove(pos, player):
             return False
 
 
-def receiveMove():
+def receiveMove():                              # ontvangt zet en zet de zet
     rconn = listen.accept()
     msg = rconn.recv()
     if not inputMove(msg[0], msg[1]):
@@ -208,7 +207,7 @@ def initGame():
     reset()
 
 
-def reset():
+def reset():                        # maak bord leeg
     global layout
     layout = [" ", " ", " ",
               " ", " ", " ",
@@ -235,12 +234,12 @@ def checkPlayersEmpty():
     return True
 
 
-def checkPlayers():
+def checkPlayers():                 # check of er spelers bekend zijn (voor mensen tegen elkaar)
     global players
     global disable_player_check
     if not disable_player_check:
         inp = input("Do you want to disable player check? (y/n): ")
-        if inp.upper() == "Y":
+        if inp.upper() == "Y":                  # check niet of er spelers bekend zijn aan het begin van een spel
             disable_player_check = True
             return None
         if not checkPlayersEmpty():
@@ -258,8 +257,7 @@ def gameCount():
             print("Exceeded maximum of '" + str(gameNrMax) + "' games")
         gameNrTarget = nr
     else:
-        print("input not int")
-        exit()
+        error("input not int", True)
 
 
 def game():
@@ -293,8 +291,10 @@ def main():
     print("Game ended")
 
 
-if __name__ == "__main__":
-    try:
+if __name__ == "__main__":                  # checkt of game als module wordt uitgevoerd
+    try:                                    # onderbreekt programma zonder errors
         main()
     except KeyboardInterrupt:
-        error("Exiting program",True)
+        error("Exiting program", True)
+else:
+    error("Game should not be running as an api", True)
