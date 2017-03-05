@@ -54,6 +54,8 @@ layout = [" ", " ", " ",            # speelbord
           " ", " ", " "]
 
 winners = []
+outputfile = "win-output.txt"
+outputtofile = True
 raddress = ""                       # (ip, port)
 
 gameNr = 1
@@ -127,6 +129,9 @@ def printBoard():
 def Won(player):
     global winners
     print("winner: " + player)
+    if outputtofile:
+        file = open(outputfile, "a")
+        file.write(player + "\n")
 
 
 def checkWin():
@@ -155,6 +160,13 @@ def checkWin():
     elif (lay[2] == "X" and lay[5] == "X" and lay[8] == "X") or (lay[2] == "O" and lay[5] == "O" and lay[8] == "O"):
         Won(lay[2])
         return True
+    for i in lay:                       # als alle plekken vol zijn en er niet gewonnen is dus gelijkspel
+        if i == " ":
+            return None
+    file = open(outputfile, 'a')
+    file.write("draw")
+    file.close()
+    return True
 
 
 def inputMove(pos, player):                     # checkt gevraagde zet mogelijk
@@ -175,6 +187,40 @@ def receiveMove():                              # ontvangt zet en zet de zet
         print("Valid")
         rconn.send("Valid")
     rconn.close()
+
+
+def winoutput():
+    global outputtofile
+    if os.path.isfile(outputfile):
+        inp = input(outputfile + " exists, do you want to clear it? (y/n) ")
+        if inp.upper == "Y":
+            open(outputfile, 'w').close()
+            inp = input("do you want to create an output file? (y/n) ")
+            if inp.upper == "Y":
+                outputtofile = True
+            elif inp.upper == "N":
+                outputtofile = False
+            else:
+                error("invalid input", True)
+        elif inp.upper == "N":
+            print(outputfile + " kept")
+            inp = input("do you want to use an output file? (y/n) ")
+            if inp.upper == "Y":
+                outputtofile = True
+            elif inp.upper == "N":
+                outputtofile = False
+            else:
+                error("invalid input", True)
+        else:
+            error("invalid input", True)
+    else:
+        inp = input(outputfile + " doesn't exist, do you want to use an output file? (y/n) ")
+        if inp.upper == "Y":
+            outputtofile = True
+        elif inp.upper == "N":
+            outputtofile = False
+        else:
+            error("invalid input", True)
 
 
 def initGame():
@@ -262,7 +308,7 @@ def gameCount():
 
 def game():
     print(players)
-    for i in range(9):
+    for i in range(5):
         sendBoard("X")
         receiveMove()
         clearS()
