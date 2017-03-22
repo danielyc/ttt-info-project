@@ -17,7 +17,7 @@ def clearS():
 # TODO
 #
 
-# VERSIE 1.0
+# VERSIE 1.1
 
 # stappen
 # game check of al players bekend           &
@@ -110,6 +110,28 @@ def setIp():
 print(raddress)  # DEBUG
 
 
+def send(player,msg):
+    if player == "ALL":
+        addr = (players[2], Cport)
+        conn = Client(addr, authkey=b'tttinfo')
+        conn.send(msg)
+        conn.close()
+        addr = (players[5], Cport)
+        conn = Client(addr, authkey=b'tttinfo')
+        conn.send(layout)
+        conn.close()
+    elif players[1] == player:
+        addr = (players[2], Cport)
+        conn = Client(addr, authkey=b'tttinfo')
+        conn.send(msg)
+        conn.close()
+    else:
+        addr = (players[5], Cport)
+        conn = Client(addr, authkey=b'tttinfo')
+        conn.send(layout)
+        conn.close()
+
+
 def Board(position, player):            # plaats zet
     global layout
     layout[int(position)] = player.upper()
@@ -128,10 +150,12 @@ def printBoard():
 
 def Won(player):
     global winners
-    print("winner: " + player)
+    msg = "winner: " + player
+    print(msg)
     if outputtofile:
         file = open(outputfile, "a")
         file.write(player + "\n")
+    send("ALL",msg)
 
 
 def checkWin():
@@ -166,6 +190,7 @@ def checkWin():
     file = open(outputfile, 'a')
     file.write("draw")
     file.close()
+    send("ALL","draw")
     return True
 
 
@@ -192,32 +217,32 @@ def receiveMove():                              # ontvangt zet en zet de zet
 def winoutput():
     global outputtofile
     if os.path.isfile(outputfile):
-        inp = input(outputfile + " exists, do you want to clear it? (y/n) ")
-        if inp.upper == "Y":
+        inp = input(outputfile + " exists, do you want to clear it? (y/n): ")
+        if inp.upper() == "Y":
             open(outputfile, 'w').close()
-            inp = input("do you want to create an output file? (y/n) ")
-            if inp.upper == "Y":
+            inp = input("do you want to create an output file? (y/n): ")
+            if inp.upper() == "Y":
                 outputtofile = True
-            elif inp.upper == "N":
+            elif inp.upper() == "N":
                 outputtofile = False
             else:
                 error("invalid input", True)
-        elif inp.upper == "N":
+        elif inp.upper() == "N":
             print(outputfile + " kept")
-            inp = input("do you want to use an output file? (y/n) ")
-            if inp.upper == "Y":
+            inp = input("do you want to use an output file? (y/n): ")
+            if inp.upper() == "Y":
                 outputtofile = True
-            elif inp.upper == "N":
+            elif inp.upper() == "N":
                 outputtofile = False
             else:
                 error("invalid input", True)
         else:
             error("invalid input", True)
     else:
-        inp = input(outputfile + " doesn't exist, do you want to use an output file? (y/n) ")
-        if inp.upper == "Y":
+        inp = input(outputfile + " doesn't exist, do you want to use an output file? (y/n): ")
+        if inp.upper() == "Y":
             outputtofile = True
-        elif inp.upper == "N":
+        elif inp.upper() == "N":
             outputtofile = False
         else:
             error("invalid input", True)
@@ -261,16 +286,7 @@ def reset():                        # maak bord leeg
 
 
 def sendBoard(player):
-    if players[1] == player:
-        addr = (players[2], Cport)
-        conn = Client(addr, authkey=b'tttinfo')
-        conn.send(layout)
-        conn.close()
-    else:
-        addr = (players[5], Cport)
-        conn = Client(addr, authkey=b'tttinfo')
-        conn.send(layout)
-        conn.close()
+    send(player,layout)
 
 
 def checkPlayersEmpty():
@@ -330,11 +346,14 @@ def main():
     setIp()
     gameCount()
     checkPlayers()
+    winoutput()
     initGame()
     while gameNr <= gameNrTarget:
         game()
         gameNr += 1
     print("Game ended")
+    send("ALL","end")
+    exit()
 
 
 if __name__ == "__main__":                  # checkt of game als module wordt uitgevoerd

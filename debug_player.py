@@ -2,12 +2,11 @@ from multiprocessing.connection import Client
 from multiprocessing.connection import Listener
 from ipaddress import ip_address
 import os
-from time import sleep
 import sys
 import socket
 
 
-def clearS():
+def clearS():                                           #maakt het scherm schoon
     if sys.platform.startswith("Linux"):
         os.system("clear")
     elif sys.platform.startswith("Win32"):
@@ -24,7 +23,6 @@ layout = [" ", " ", " ",
 
 raddress = ""
 caddress = ""
-listen = ''
 
 
 def error(msg, ext=False):
@@ -35,7 +33,7 @@ def error(msg, ext=False):
         print("[ERROR] " + msg)
 
 
-def setIp():
+def setIp():                                            #regelt de ip confiuratie
     global raddress
     global listen
     if socket.gethostbyname(socket.gethostname()) == '127.0.1.1':
@@ -66,8 +64,6 @@ def setIp():
     listen = Listener(raddress, authkey=b'tttinfo')
 
 
-
-
 def printBoard():
     print("-------------------------")
     print("|   " + layout[0] + "   |   " + layout[1] + "   |   " + layout[2] + "   |")
@@ -78,7 +74,7 @@ def printBoard():
     print("-------------------------")
 
 
-def startGame():
+def startGame():                          #wat wordt uitgevoerd aan het begin van het programma, ip van de game en naam
     global player
     global caddress
     name = input("Name: ")
@@ -106,12 +102,31 @@ def startGame():
         print("waiting for board")
 
 
-def timeout(time):
-    sleep(time)
-    return True
+def reset():
+    global layout
+    layout = [" ", " ", " ",
+              " ", " ", " ",
+              " ", " ", " "]
 
 
-def sendMove():
+def gameEnded(msg):
+    if msg == "winner: X":
+        if player == "X":
+            print("You won!!!")
+        else:
+            print("You lost")
+    elif msg == "winner: O":
+        if player == "O":
+            print("You wonn!!!")
+        else:
+            print("You lost")
+    elif msg == "draw":
+        print("Draw")
+    clearS()
+    reset()
+
+
+def sendMove():                            #stuurt de zet naar de game en ontvangt zet geldigheid
     pos = input("Position: ")
     cconn = Client(caddress, authkey=b'tttinfo')
     cconn.send([int(pos), player])
@@ -123,30 +138,37 @@ def sendMove():
         cconn.close()
 
 
-def receiveBoard():
+def receive():                       #ontvant het bord
     global layout
 
     rconn = listen.accept()
-    layout = rconn.recv()
+    msg = rconn.recv()
+    if 'winner' in str(msg):
+        gameEnded(msg)
+        return False
+    elif str(msg) == "draw":
+        gameEnded(msg)
+        return False
+    elif str(msg) == "end":
+        print("Game stopped. Exiting")
+        exit()
+    layout = msg
     rconn.close()
     printBoard()
+    return True
 
 
-def main():
+def main():                               #volgorde van wat uitgevoerd wordt
     setIp()
     startGame()
-    receiveBoard()
-    sendMove()
-    receiveBoard()
-    sendMove()
-    receiveBoard()
-    sendMove()
-    receiveBoard()
-    sendMove()
-    receiveBoard()
-    sendMove()
+    while receive():
+        sendMove()
 
 
-
-if __name__ == "__main__":
-    main()
+if __name__ == "__main__":                  # checkt of game als module wordt uitgevoerd
+    try:                                    # onderbreekt programma zonder errors
+        main()
+    except KeyboardInterrupt:
+        error("Exiting program", True)
+else:
+    error("Game should not be running as an api", True)
