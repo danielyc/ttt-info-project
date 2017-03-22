@@ -15,9 +15,10 @@ def clearS():
 
 
 # TODO
-#
+# single pc operation
+# player randomizer
 
-# VERSIE 1.1
+# VERSIE 1.2
 
 # stappen
 # game check of al players bekend           &
@@ -30,14 +31,13 @@ def clearS():
 # game ontvangt zet x                       &
 # game test voor winst                      &
 # game reset bord                           &
-# game houd bij welke bot vaakst wint
-
+# game houd bij welke bot vaakst wint       $
 # client stuurt naam en ontvangt x of o     &
 # client x ontvangt bord                    &
 # client x stuurt zet                       &
 # client o ontvangt bord                    &
 # client o stuurt zet                       &
-# client ontvangt winst of verlies en bord
+# client ontvangt winst of verlies en bord  $
 
 # client naar game 6000
 # game naar client 5000
@@ -60,7 +60,7 @@ raddress = ""                       # (ip, port)
 
 gameNr = 1
 gameNrTarget = 0                    # hoeveel spellen er gespeeld worden
-gameNrMax = 100
+gameNrMax = 10
 
 disable_player_check = False        # check of de spelers leeg zijn aan het einde van de ronden
 
@@ -116,20 +116,24 @@ def send(player,msg):
         conn = Client(addr, authkey=b'tttinfo')
         conn.send(msg)
         conn.close()
+        print(str(addr) + str(msg))               #DEBUG
         addr = (players[5], Cport)
         conn = Client(addr, authkey=b'tttinfo')
-        conn.send(layout)
+        conn.send(msg)
         conn.close()
+        print(str(addr) + str(msg))  # DEBUG
     elif players[1] == player:
         addr = (players[2], Cport)
         conn = Client(addr, authkey=b'tttinfo')
         conn.send(msg)
         conn.close()
+        print(str(addr) + str(msg))  # DEBUG
     else:
         addr = (players[5], Cport)
         conn = Client(addr, authkey=b'tttinfo')
-        conn.send(layout)
+        conn.send(msg)
         conn.close()
+        print(str(addr) + str(msg))  # DEBUG
 
 
 def Board(position, player):            # plaats zet
@@ -208,6 +212,7 @@ def receiveMove():                              # ontvangt zet en zet de zet
     if not inputMove(msg[0], msg[1]):
         print("Invalid move")
         rconn.send("InvalidMove")
+        receiveMove()
     else:
         print("Valid")
         rconn.send("Valid")
@@ -324,19 +329,20 @@ def gameCount():
 
 def game():
     print(players)
+    reset()
     for i in range(5):
         sendBoard("X")
         receiveMove()
         clearS()
         printBoard()
         if checkWin():
-            break
+            return
         sendBoard("O")
         receiveMove()
         clearS()
         printBoard()
         if checkWin():
-            break
+            return
     return
 
 

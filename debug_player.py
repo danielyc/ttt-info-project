@@ -126,6 +126,15 @@ def gameEnded(msg):
     reset()
 
 
+def specialmsg(msg):
+    if 'winner' in str(msg):
+        gameEnded(msg)
+        return True
+    elif str(msg) == "draw":
+        gameEnded(msg)
+        return True
+
+
 def sendMove():                            #stuurt de zet naar de game en ontvangt zet geldigheid
     pos = input("Position: ")
     cconn = Client(caddress, authkey=b'tttinfo')
@@ -133,9 +142,14 @@ def sendMove():                            #stuurt de zet naar de game en ontvan
     msg = cconn.recv()
     if msg == "InvalidMove":
         cconn.close()
-        error("Invalid move", True)
+        error("Invalid move")
+        sendMove()
     elif msg == "Valid":
         cconn.close()
+    elif "winner" in msg or msg == "draw" or msg == "end":
+        cconn.close()
+        specialmsg(msg)
+        return True
 
 
 def receive():                       #ontvant het bord
@@ -143,26 +157,29 @@ def receive():                       #ontvant het bord
 
     rconn = listen.accept()
     msg = rconn.recv()
-    if 'winner' in str(msg):
-        gameEnded(msg)
-        return False
-    elif str(msg) == "draw":
-        gameEnded(msg)
-        return False
-    elif str(msg) == "end":
+    rconn.close()
+    if str(msg) == "end":
         print("Game stopped. Exiting")
         exit()
+    if specialmsg(msg):
+        receive()
+        return False
     layout = msg
-    rconn.close()
     printBoard()
     return True
+
+
+def game():
+    while True:
+        receive()
+        if sendMove():
+            break
 
 
 def main():                               #volgorde van wat uitgevoerd wordt
     setIp()
     startGame()
-    while receive():
-        sendMove()
+    game()
 
 
 if __name__ == "__main__":                  # checkt of game als module wordt uitgevoerd
