@@ -18,7 +18,7 @@ def clearS():
 # single pc operation
 # player randomizer
 
-# VERSIE 1.2
+# VERSIE 1.3
 
 # stappen
 # game check of al players bekend           &
