@@ -4,9 +4,10 @@ from ipaddress import ip_address
 import os
 import sys
 import socket
+import random
 
 
-def clearS():                                           #maakt het scherm schoon
+def clearS():                                           # maakt het scherm schoon
     if sys.platform.startswith("Linux"):
         os.system("clear")
     elif sys.platform.startswith("Win32"):
@@ -14,8 +15,10 @@ def clearS():                                           #maakt het scherm schoon
 
 Lport = 5000
 Cport = 6000
+local = False
 
 player = " "
+IP = " "
 
 layout = [" ", " ", " ",
           " ", " ", " ",
@@ -33,10 +36,26 @@ def error(msg, ext=False):
         print("[ERROR] " + msg)
 
 
-def setIp():                                            #regelt de ip confiuratie
+def pcConfig():
+    global local
+    global Lport
+    inp = input("Do you want to play on one PC? (y/n): ")
+    if inp.upper() == "Y":
+        local = True
+        Lport = random.randint(5000, 5999)
+        print("Listen port is: " + str(Lport))
+    elif inp.upper() == "N":
+        local = False
+    else:
+        error("Invalid input", True)
+
+
+def setIp():                                            # regelt de ip confiuratie
     global raddress
     global listen
-    if socket.gethostbyname(socket.gethostname()) == '127.0.1.1':
+    global IP
+    IP = socket.gethostbyname(socket.gethostname())
+    if IP == '127.0.1.1':
         error("not able to get correct Local IP")
         inp = input("Enter IP manually: ")
         if len(inp) == 0:
@@ -47,9 +66,9 @@ def setIp():                                            #regelt de ip confiurati
         except ValueError:
             error("Invalid ip", True)
     else:
-        inp = input("Is '" + socket.gethostbyname(socket.gethostname()) + "' The correct IP? (y/n)")
+        inp = input("Is '" + IP + "' The correct IP? (y/n)")
         if inp.upper() == "Y":
-            raddress = (socket.gethostbyname(socket.gethostname()), Lport)
+            raddress = (IP, Lport)
         elif inp.upper() == "N":
             inp = input("Enter IP manually: ")
             if len(inp) == 0:
@@ -74,28 +93,40 @@ def printBoard():
     print("-------------------------")
 
 
-def startGame():                          #wat wordt uitgevoerd aan het begin van het programma, ip van de game en naam
+def startGame():                          # wat wordt uitgevoerd aan het begin van het programma, ip van de game en naam
     global player
     global caddress
+    global Lport
     name = input("Name: ")
-    inp = input("Enter IP of the Game: ")
-    if len(inp) == 0:
-        error("IP empty", True)
-    else:
+    if not local:
+        inp = input("Enter IP of the Game: ")
+        if len(inp) == 0:
+            error("IP empty", True)
+        else:
+            try:
+                if ip_address(inp):
+                    print("Connecting to " + str(inp) + " on port " + str(Cport))
+                    caddress = (str(inp), Cport)
+            except ValueError:
+                error("Invalid IP", True)
         try:
-            if ip_address(inp):
-                print("Connecting to " + str(inp) + " on port " + str(Cport))
-                caddress = (str(inp), Cport)
-        except ValueError:
-            error("Invalid IP", True)
-    try:
-        cconn = Client(caddress, authkey=b'tttinfo')
-        cconn.send(name)
-
-        player = cconn.recv()
-        cconn.close()
-    except ConnectionRefusedError:
-        error("Game not functioning or listening", True)
+            conn = Client(caddress, authkey=b'tttinfo')
+            conn.send(name)
+            player = conn.recv()
+            conn.close()
+        except ConnectionRefusedError:
+            error("Game not functioning or listening", True)
+    else:
+        print("Using local IP")
+        try:
+            caddress = (IP, Cport)
+            msg = ([name, str(Lport)])
+            cconn = Client(caddress, authkey=b'tttinfo')
+            cconn.send(msg)
+            player = cconn.recv()
+            cconn.close()
+        except ConnectionRefusedError:
+            error("Game not functioning or listening", True)
     print("You are player: " + player)
 
     if player == "O":
@@ -135,7 +166,7 @@ def specialmsg(msg):
         return True
 
 
-def sendMove():                            #stuurt de zet naar de game en ontvangt zet geldigheid
+def sendMove():                            # stuurt de zet naar de game en ontvangt zet geldigheid
     pos = input("Position: ")
     cconn = Client(caddress, authkey=b'tttinfo')
     cconn.send([int(pos), player])
@@ -152,9 +183,8 @@ def sendMove():                            #stuurt de zet naar de game en ontvan
         return True
 
 
-def receive():                       #ontvant het bord
+def receive():                       # ontvant het bord
     global layout
-
     rconn = listen.accept()
     msg = rconn.recv()
     rconn.close()
@@ -176,7 +206,8 @@ def game():
             break
 
 
-def main():                               #volgorde van wat uitgevoerd wordt
+def main():                               # volgorde van wat uitgevoerd wordt
+    pcConfig()
     setIp()
     startGame()
     game()

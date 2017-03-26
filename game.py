@@ -15,10 +15,9 @@ def clearS():
 
 
 # TODO
-# single pc operation
 # player randomizer
 
-# VERSIE 1.3
+# VERSIE 1.4
 
 # stappen
 # game check of al players bekend           &
@@ -46,7 +45,7 @@ Lport = 6000
 Cport = 5000
 IP = ''
 
-players = [" ", " ", " ",           # naam, ip, speler
+players = [" ", " ", " ",           # naam, speler, ip/port
            " ", " ", " "]
 
 layout = [" ", " ", " ",            # speelbord
@@ -73,6 +72,60 @@ def error(msg, ext=False):          # error afdrukken
         print("[ERROR] " + msg)
 
 
+def send(player,msg):
+    if len(players[2]) > 4:
+        if player == "ALL":
+            addr = (players[2], Cport)
+            conn = Client(addr, authkey=b'tttinfo')
+            conn.send(msg)
+            conn.close()
+            addr = (players[5], Cport)
+            conn = Client(addr, authkey=b'tttinfo')
+            conn.send(msg)
+            conn.close()
+        elif players[1] == player:
+            addr = (players[2], Cport)
+            conn = Client(addr, authkey=b'tttinfo')
+            conn.send(msg)
+            conn.close()
+        else:
+            addr = (players[5], Cport)
+            conn = Client(addr, authkey=b'tttinfo')
+            conn.send(msg)
+            conn.close()
+    else:
+        if player == "ALL":
+            addr = (IP, int(players[2]))
+            conn = Client(addr, authkey=b'tttinfo')
+            conn.send(msg)
+            conn.close()
+            addr = (IP, int(players[5]))
+            conn = Client(addr, authkey=b'tttinfo')
+            conn.send(msg)
+            conn.close()
+        elif players[1] == player:
+            addr = (IP, int(players[2]))
+            conn = Client(addr, authkey=b'tttinfo')
+            conn.send(msg)
+            conn.close()
+        else:
+            addr = (IP, int(players[5]))
+            conn = Client(addr, authkey=b'tttinfo')
+            conn.send(msg)
+            conn.close()
+
+
+def pcConfig():
+    global players
+    inp = input("Do you want to play on one PC? (y/n): ")
+    if inp.upper() == "Y":
+        initGame(False)
+    elif inp.upper() == "N":
+        initGame(True)
+    else:
+        error("Invalid input", True)
+
+
 def setIp():
     global raddress
     global IP
@@ -89,7 +142,7 @@ def setIp():
         except ValueError:
             error("Invalid ip", True)
     else:
-        inp = input("Is '" + IP + "' The correct IP? (y/n)")       # als het ip gevonden kan worden
+        inp = input("Is '" + IP + "' The correct IP? (y/n): ")       # als het ip gevonden kan worden
         if inp.upper() == "Y":
             raddress = (IP, Lport)
             print(raddress)
@@ -108,32 +161,6 @@ def setIp():
     listen = Listener(raddress, authkey=b'tttinfo')
 
 print(raddress)  # DEBUG
-
-
-def send(player,msg):
-    if player == "ALL":
-        addr = (players[2], Cport)
-        conn = Client(addr, authkey=b'tttinfo')
-        conn.send(msg)
-        conn.close()
-        print(str(addr) + str(msg))               #DEBUG
-        addr = (players[5], Cport)
-        conn = Client(addr, authkey=b'tttinfo')
-        conn.send(msg)
-        conn.close()
-        print(str(addr) + str(msg))  # DEBUG
-    elif players[1] == player:
-        addr = (players[2], Cport)
-        conn = Client(addr, authkey=b'tttinfo')
-        conn.send(msg)
-        conn.close()
-        print(str(addr) + str(msg))  # DEBUG
-    else:
-        addr = (players[5], Cport)
-        conn = Client(addr, authkey=b'tttinfo')
-        conn.send(msg)
-        conn.close()
-        print(str(addr) + str(msg))  # DEBUG
 
 
 def Board(position, player):            # plaats zet
@@ -199,7 +226,9 @@ def checkWin():
 
 
 def inputMove(pos, player):                     # checkt gevraagde zet mogelijk
-        if layout[pos] == " ":
+        if pos > 8 or pos < 0:
+            return False
+        elif layout[pos] == " ":
             Board(pos, player)
             return True
         else:
@@ -253,34 +282,65 @@ def winoutput():
             error("invalid input", True)
 
 
-def initGame():
+def initGame(dual):
     print("Game starting on port: " + str(Lport))
     global players
-    conn = listen.accept()
-    players[0] = conn.recv()
-    if bool(random.getrandbits(1)):
-        players[1] = "X"
-        players[4] = "O"
-        players[2] = listen.last_accepted[0]
-        conn.send("X")
-        conn.close()
-        rconn = listen.accept()
-        players[3] = rconn.recv()
-        players[5] = listen.last_accepted[0]
-        rconn.send("O")
-        rconn.close()
+    if dual:
+        conn = listen.accept()
+        players[0] = conn.recv()
+        if bool(random.getrandbits(1)):
+            players[1] = "X"
+            players[4] = "O"
+            players[2] = listen.last_accepted[0]
+            conn.send("X")
+            conn.close()
+            rconn = listen.accept()
+            players[3] = rconn.recv()
+            players[5] = listen.last_accepted[0]
+            rconn.send("O")
+            rconn.close()
+        else:
+            players[1] = "O"
+            players[4] = "X"
+            players[2] = listen.last_accepted[0]
+            conn.send("O")
+            conn.close()
+            rconn = listen.accept()
+            players[3] = rconn.recv()
+            players[5] = listen.last_accepted[0]
+            rconn.send("X")
+            rconn.close()
+        reset()
     else:
-        players[1] = "O"
-        players[4] = "X"
-        players[2] = listen.last_accepted[0]
-        conn.send("O")
-        conn.close()
-        rconn = listen.accept()
-        players[3] = rconn.recv()
-        players[5] = listen.last_accepted[0]
-        rconn.send("X")
-        rconn.close()
-    reset()
+        conn = listen.accept()
+        msg = conn.recv()
+        print(msg)
+        players[0] = msg[0]
+        if bool(random.getrandbits(1)):
+            players[1] = "X"
+            players[4] = "O"
+            players[2] = msg[1]
+            conn.send("X")
+            conn.close()
+            conn = listen.accept()
+            msg = conn.recv()
+            players[3] = msg[0]
+            players[5] = msg[1]
+            conn.send("O")
+            conn.close()
+        else:
+            players[1] = "O"
+            players[4] = "X"
+            players[2] = msg[1]
+            conn.send("O")
+            conn.close()
+            conn = listen.accept()
+            msg = conn.recv()
+            players[3] = msg[0]
+            players[5] = msg[1]
+            conn.send("X")
+            conn.close()
+        reset()
 
 
 def reset():                        # maak bord leeg
@@ -353,7 +413,7 @@ def main():
     gameCount()
     checkPlayers()
     winoutput()
-    initGame()
+    pcConfig()
     while gameNr <= gameNrTarget:
         game()
         gameNr += 1
