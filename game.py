@@ -17,7 +17,7 @@ def clearS():
 # TODO
 # player randomizer
 
-# VERSIE 1.4
+# VERSIE 1.4.1
 
 # stappen
 # game check of al players bekend           &
@@ -73,46 +73,49 @@ def error(msg, ext=False):          # error afdrukken
 
 
 def send(player,msg):
-    if len(players[2]) > 4:
-        if player == "ALL":
-            addr = (players[2], Cport)
-            conn = Client(addr, authkey=b'tttinfo')
-            conn.send(msg)
-            conn.close()
-            addr = (players[5], Cport)
-            conn = Client(addr, authkey=b'tttinfo')
-            conn.send(msg)
-            conn.close()
-        elif players[1] == player:
-            addr = (players[2], Cport)
-            conn = Client(addr, authkey=b'tttinfo')
-            conn.send(msg)
-            conn.close()
+    try:
+        if len(players[2]) > 4:
+            if player == "ALL":
+                addr = (players[2], Cport)
+                conn = Client(addr, authkey=b'tttinfo')
+                conn.send(msg)
+                conn.close()
+                addr = (players[5], Cport)
+                conn = Client(addr, authkey=b'tttinfo')
+                conn.send(msg)
+                conn.close()
+            elif players[1] == player:
+                addr = (players[2], Cport)
+                conn = Client(addr, authkey=b'tttinfo')
+                conn.send(msg)
+                conn.close()
+            else:
+                addr = (players[5], Cport)
+                conn = Client(addr, authkey=b'tttinfo')
+                conn.send(msg)
+                conn.close()
         else:
-            addr = (players[5], Cport)
-            conn = Client(addr, authkey=b'tttinfo')
-            conn.send(msg)
-            conn.close()
-    else:
-        if player == "ALL":
-            addr = (IP, int(players[2]))
-            conn = Client(addr, authkey=b'tttinfo')
-            conn.send(msg)
-            conn.close()
-            addr = (IP, int(players[5]))
-            conn = Client(addr, authkey=b'tttinfo')
-            conn.send(msg)
-            conn.close()
-        elif players[1] == player:
-            addr = (IP, int(players[2]))
-            conn = Client(addr, authkey=b'tttinfo')
-            conn.send(msg)
-            conn.close()
-        else:
-            addr = (IP, int(players[5]))
-            conn = Client(addr, authkey=b'tttinfo')
-            conn.send(msg)
-            conn.close()
+            if player == "ALL":
+                addr = (IP, int(players[2]))
+                conn = Client(addr, authkey=b'tttinfo')
+                conn.send(msg)
+                conn.close()
+                addr = (IP, int(players[5]))
+                conn = Client(addr, authkey=b'tttinfo')
+                conn.send(msg)
+                conn.close()
+            elif players[1] == player:
+                addr = (IP, int(players[2]))
+                conn = Client(addr, authkey=b'tttinfo')
+                conn.send(msg)
+                conn.close()
+            else:
+                addr = (IP, int(players[5]))
+                conn = Client(addr, authkey=b'tttinfo')
+                conn.send(msg)
+                conn.close()
+    except ConnectionRefusedError:
+        error("Player refused connection", True)
 
 
 def pcConfig():
@@ -159,8 +162,6 @@ def setIp():
         else:
             error("Not a valid input", True)
     listen = Listener(raddress, authkey=b'tttinfo')
-
-print(raddress)  # DEBUG
 
 
 def Board(position, player):            # plaats zet
@@ -369,21 +370,30 @@ def checkPlayers():                 # check of er spelers bekend zijn (voor mens
         if inp.upper() == "Y":                  # check niet of er spelers bekend zijn aan het begin van een spel
             disable_player_check = True
             return None
+        elif inp.upper() == "N":
+            disable_player_check = False
+        else:
+            error("Invalid input", True)
         if not checkPlayersEmpty():
             inp = input("Players not empty, do you want to reset? (y/n): ")
             if inp.upper() == "Y":
                 players = [" ", " ", " ",
                            " ", " ", " "]
+            elif inp.upper() == "N":
+                return None
+            else:
+                error("Invalid input", True)
 
 
 def gameCount():
     global gameNrTarget
-    nr = int(input("How manny times do you want to play sequential? (max " + str(gameNrMax) + ") "))
-    if isinstance(nr, int):
+    nr = input("How manny times do you want to play sequential? (max " + str(gameNrMax) + "): ")
+    try:
+        nr = int(nr)
         if nr > gameNrMax:
             print("Exceeded maximum of '" + str(gameNrMax) + "' games")
         gameNrTarget = nr
-    else:
+    except ValueError:
         error("input not int", True)
 
 
