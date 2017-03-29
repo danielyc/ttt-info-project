@@ -28,15 +28,15 @@ raddress = ""
 caddress = ""
 
 
-def error(msg, ext=False):
+def error(msg, ext=False):                              # error afdrukken
     if ext:
         print("[ERROR] " + msg)
-        exit()
+        exit()                                          # stop game
     else:
         print("[ERROR] " + msg)
 
 
-def pcConfig():
+def pcConfig():                                         # vraag of de game lokaal of via netwerk wordt gespeeld
     global local
     global Lport
     inp = input("Do you want to play on one PC? (y/n): ")
@@ -140,7 +140,7 @@ def reset():
               " ", " ", " "]
 
 
-def gameEnded(msg):
+def gameEnded(msg):                                              # wat wordt uitgevoerd als een game is afgelopen
     if msg == "winner: X":
         if player == "X":
             print("You won!!!")
@@ -157,7 +157,7 @@ def gameEnded(msg):
     reset()
 
 
-def specialmsg(msg):
+def specialmsg(msg):                                            # hanteerd speciale berichten
     if 'winner' in str(msg):
         gameEnded(msg)
         return True
@@ -183,7 +183,7 @@ def sendMove():                            # stuurt de zet naar de game en ontva
         return True
 
 
-def receive():                       # ontvant het bord
+def receive():                       # ontvant het bord/ bericht
     global layout
     rconn = listen.accept()
     msg = rconn.recv()

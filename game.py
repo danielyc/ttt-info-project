@@ -7,7 +7,7 @@ from multiprocessing.connection import Listener
 from multiprocessing.connection import Client
 
 
-def clearS():
+def clearS():                                       # scherm schoon maken
     if sys.platform.startswith("Linux"):
         os.system("clear")
     elif sys.platform.startswith("Win32"):
@@ -17,7 +17,7 @@ def clearS():
 # TODO
 # player randomizer
 
-# VERSIE 1.4.1
+# VERSIE 1.5
 
 # stappen
 # game check of al players bekend           &
@@ -41,8 +41,8 @@ def clearS():
 # client naar game 6000
 # game naar client 5000
 
-Lport = 6000
-Cport = 5000
+Lport = 6000                        # luister port
+Cport = 5000                        # connectie port
 IP = ''
 
 players = [" ", " ", " ",           # naam, speler, ip/port
@@ -57,7 +57,7 @@ outputfile = "win-output.txt"
 outputtofile = True
 raddress = ""                       # (ip, port)
 
-gameNr = 1
+gameNr = 1                          # huidige game nummer
 gameNrTarget = 0                    # hoeveel spellen er gespeeld worden
 gameNrMax = 10
 
@@ -74,7 +74,7 @@ def error(msg, ext=False):          # error afdrukken
 
 def send(player,msg):
     try:
-        if len(players[2]) > 4:
+        if len(players[2]) > 4:                             # als ip/port groter is dan 4 dan is het een ip
             if player == "ALL":
                 addr = (players[2], Cport)
                 conn = Client(addr, authkey=b'tttinfo')
@@ -94,7 +94,7 @@ def send(player,msg):
                 conn = Client(addr, authkey=b'tttinfo')
                 conn.send(msg)
                 conn.close()
-        else:
+        else:                                               # anders is het een port dus is het lokaal gespeeld
             if player == "ALL":
                 addr = (IP, int(players[2]))
                 conn = Client(addr, authkey=b'tttinfo')
@@ -118,13 +118,13 @@ def send(player,msg):
         error("Player refused connection", True)
 
 
-def pcConfig():
+def pcConfig():                                            # vraag of game lokaal of via netwerk gespeelt wordt
     global players
     inp = input("Do you want to play on one PC? (y/n): ")
     if inp.upper() == "Y":
-        initGame(False)
-    elif inp.upper() == "N":
         initGame(True)
+    elif inp.upper() == "N":
+        initGame(False)
     else:
         error("Invalid input", True)
 
@@ -180,13 +180,14 @@ def printBoard():
     print("-------------------------")
 
 
-def Won(player):
+def Won(player):                            # wat wordt uitgevoed als iemand wint
     global winners
     msg = "winner: " + player
     print(msg)
     if outputtofile:
         file = open(outputfile, "a")
         file.write(player + "\n")
+    winners.append(player)
     send("ALL",msg)
 
 
@@ -222,6 +223,7 @@ def checkWin():
     file = open(outputfile, 'a')
     file.write("draw")
     file.close()
+    winners.append("draw")
     send("ALL","draw")
     return True
 
@@ -249,7 +251,7 @@ def receiveMove():                              # ontvangt zet en zet de zet
     rconn.close()
 
 
-def winoutput():
+def winoutput():                                   # configureren van output naar een file
     global outputtofile
     if os.path.isfile(outputfile):
         inp = input(outputfile + " exists, do you want to clear it? (y/n): ")
@@ -283,10 +285,10 @@ def winoutput():
             error("invalid input", True)
 
 
-def initGame(dual):
+def initGame(local):
     print("Game starting on port: " + str(Lport))
     global players
-    if dual:
+    if not local:                                   # voor netwerk
         conn = listen.accept()
         players[0] = conn.recv()
         if bool(random.getrandbits(1)):
@@ -312,10 +314,9 @@ def initGame(dual):
             rconn.send("X")
             rconn.close()
         reset()
-    else:
+    else:                                           # voor lokaal
         conn = listen.accept()
         msg = conn.recv()
-        print(msg)
         players[0] = msg[0]
         if bool(random.getrandbits(1)):
             players[1] = "X"
@@ -385,7 +386,7 @@ def checkPlayers():                 # check of er spelers bekend zijn (voor mens
                 error("Invalid input", True)
 
 
-def gameCount():
+def gameCount():                                # hoeveel games worden er gespeeld
     global gameNrTarget
     nr = input("How manny times do you want to play sequential? (max " + str(gameNrMax) + "): ")
     try:
@@ -395,6 +396,22 @@ def gameCount():
         gameNrTarget = nr
     except ValueError:
         error("input not int", True)
+
+
+def showScore():                                # presenteer de scores aan het einde
+    x = 0
+    o = 0
+    d = 0
+    for i in winners:
+        if i == "X":
+            x += 1
+        elif i == "O":
+            o += 1
+        elif i == "draw":
+            d += 1
+    print("X won " + str(x) + " times")
+    print("O won " + str(o) + " times")
+    print("Draw " + str(d) + " times")
 
 
 def game():
@@ -427,6 +444,7 @@ def main():
     while gameNr <= gameNrTarget:
         game()
         gameNr += 1
+    showScore()
     print("Game ended")
     send("ALL","end")
     exit()
