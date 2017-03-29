@@ -2,7 +2,7 @@ import os
 import random
 import socket
 import sys
-from ipaddress import ip_address
+from time import sleep
 from multiprocessing.connection import Listener
 from multiprocessing.connection import Client
 
@@ -17,7 +17,7 @@ def clearS():                                       # scherm schoon maken
 # TODO
 # player randomizer
 
-# VERSIE 1.5
+# VERSIE 1.5.1
 
 # stappen
 # game check of al players bekend           &
@@ -452,7 +452,12 @@ def main():
 
 if __name__ == "__main__":                  # checkt of game als module wordt uitgevoerd
     try:                                    # onderbreekt programma zonder errors
-        main()
+        if sys.version_info[0] < 3:
+            error("Must be running python version 3")
+            sleep(3)
+        else:
+            from ipaddress import ip_address
+            main()
     except KeyboardInterrupt:
         error("Exiting program", True)
 else:

@@ -1,6 +1,6 @@
 from multiprocessing.connection import Client
 from multiprocessing.connection import Listener
-from ipaddress import ip_address
+from time import sleep
 import os
 import sys
 import socket
@@ -215,7 +215,12 @@ def main():                               # volgorde van wat uitgevoerd wordt
 
 if __name__ == "__main__":                  # checkt of game als module wordt uitgevoerd
     try:                                    # onderbreekt programma zonder errors
-        main()
+        if sys.version_info[0] < 3:
+            error("Must be running python version 3")
+            sleep(3)
+        else:
+            from ipaddress import ip_address
+            main()
     except KeyboardInterrupt:
         error("Exiting program", True)
 else:
