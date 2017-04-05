@@ -66,7 +66,7 @@ def setIp():                                            # regelt de ip confiurat
         except ValueError:
             error("Invalid ip", True)
     else:
-        inp = input("Is '" + IP + "' The correct IP? (y/n)")
+        inp = input("Is '" + IP + "' The correct IP? (y/n): ")
         if inp.upper() == "Y":
             raddress = (IP, Lport)
         elif inp.upper() == "N":

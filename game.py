@@ -17,7 +17,7 @@ def clearS():                                       # scherm schoon maken
 # TODO
 # player randomizer
 
-# VERSIE 1.5.1
+# VERSIE 1.6
 
 # stappen
 # game check of al players bekend           &
@@ -44,6 +44,7 @@ def clearS():                                       # scherm schoon maken
 Lport = 6000                        # luister port
 Cport = 5000                        # connectie port
 IP = ''
+local = False
 
 players = [" ", " ", " ",           # naam, speler, ip/port
            " ", " ", " "]
@@ -120,11 +121,14 @@ def send(player,msg):
 
 def pcConfig():                                            # vraag of game lokaal of via netwerk gespeelt wordt
     global players
+    global local
     inp = input("Do you want to play on one PC? (y/n): ")
     if inp.upper() == "Y":
-        initGame(True)
+        local = True
+        initGame()
     elif inp.upper() == "N":
-        initGame(False)
+        local = False
+        initGame()
     else:
         error("Invalid input", True)
 
@@ -188,7 +192,7 @@ def Won(player):                            # wat wordt uitgevoed als iemand win
         file = open(outputfile, "a")
         file.write(player + "\n")
     winners.append(player)
-    send("ALL",msg)
+    send("ALL", msg)
 
 
 def checkWin():
@@ -285,7 +289,7 @@ def winoutput():                                   # configureren van output naa
             error("invalid input", True)
 
 
-def initGame(local):
+def initGame():
     print("Game starting on port: " + str(Lport))
     global players
     if not local:                                   # voor netwerk
@@ -363,27 +367,42 @@ def checkPlayersEmpty():
     return True
 
 
-def checkPlayers():                 # check of er spelers bekend zijn (voor mensen tegen elkaar)
+def checkPlayers(skip=False):                 # check of er spelers bekend zijn (voor mensen tegen elkaar)
     global players
     global disable_player_check
     if not disable_player_check:
-        inp = input("Do you want to disable player check? (y/n): ")
-        if inp.upper() == "Y":                  # check niet of er spelers bekend zijn aan het begin van een spel
-            disable_player_check = True
-            return None
-        elif inp.upper() == "N":
-            disable_player_check = False
-        else:
-            error("Invalid input", True)
-        if not checkPlayersEmpty():
-            inp = input("Players not empty, do you want to reset? (y/n): ")
-            if inp.upper() == "Y":
-                players = [" ", " ", " ",
-                           " ", " ", " "]
-            elif inp.upper() == "N":
+        if not skip:
+            inp = input("Do you want to disable player check? (y/n): ")
+            if inp.upper() == "Y":                  # check niet of er spelers bekend zijn aan het begin van een spel
+                disable_player_check = True
                 return None
+            elif inp.upper() == "N":
+                disable_player_check = False
             else:
                 error("Invalid input", True)
+            if not checkPlayersEmpty():
+                inp = input("Players not empty, do you want to reset? (y/n): ")
+                if inp.upper() == "Y":
+                    players = [" ", " ", " ",
+                               " ", " ", " "]
+                    initGame()
+                elif inp.upper() == "N":
+                    return None
+                else:
+                    error("Invalid input", True)
+        else:
+            if not checkPlayersEmpty():
+                inp = input("Players not empty, do you want to reset? (y/n): ")
+                if inp.upper() == "Y":
+                    send("ALL", "end")
+                    players = [" ", " ", " ",
+                               " ", " ", " "]
+                    initGame()
+
+                elif inp.upper() == "N":
+                    return None
+                else:
+                    error("Invalid input", True)
 
 
 def gameCount():                                # hoeveel games worden er gespeeld
@@ -444,6 +463,8 @@ def main():
     while gameNr <= gameNrTarget:
         game()
         gameNr += 1
+        if gameNr != gameNrTarget:
+            checkPlayers(True)
     showScore()
     print("Game ended")
     send("ALL","end")
